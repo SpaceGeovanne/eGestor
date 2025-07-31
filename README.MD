@@ -24,12 +24,15 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 
 ## 🚀 Criando um ambiente virtual eGestor
 
-Para inicializar o back-end, siga estas etapas:
+Acesse o arquivo eGestor-backend e execute os seguintes comandos:
 
 Windows:
 
 ```
-Acessar a pasta eGestor-backend > executar o comando: python3 -m venv venv e clicar em start.bat
+pip install -r requirements.txt - instalar as dependências do Flask
+```
+```
+python3 -m venv venv - para criar um ambiente virtual.
 ```
 
 ## ☕ Usando eGestor

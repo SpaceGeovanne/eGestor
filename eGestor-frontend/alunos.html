@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Notas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --secondary-color: #10B981;
+            --dark-color: #1F2937;
+            --light-color: #F9FAFB;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F3F4F6;
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .grade-input {
+            width: 70px;
+        }
+        
+        .success-toast {
+            animation: slideIn 0.5s, slideOut 0.5s 2.5s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        <div class="sidebar bg-white w-64 flex-shrink-0 border-r border-gray-200 p-4 flex flex-col">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-2">
+                    <img src="https://placehold.co/40x40" alt="Logo da instituição educacional" class="rounded-full">
+                    <span class="font-bold text-xl text-gray-800">eGestor</span>
+                </div>
+            </div>
+            
+            <nav class="flex-1">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="dashboard.html" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-100" id="dashboard-link">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg" id="students-link">
+                            <i class="fas fa-user-graduate mr-3"></i>
+                            <span>Alunos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-100" id="reports-link">
+                            <i class="fas fa-chart-bar mr-3"></i>
+                            <span>Relatórios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-100" id="settings-link">
+                            <i class="fas fa-cog mr-3"></i>
+                            <span>Configurações</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="mt-auto pb-4">
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <img src="https://placehold.co/40x40" alt="Foto do gestor" class="rounded-full mr-3">
+                    <div>
+                        <p class="font-medium">Gestor Administrativo</p>
+                        <p class="text-sm text-gray-500">admin@egestor.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-auto">
+            <header class="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Gestão de Notas</h1>
+                <div class="relative">
+                    <button class="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition" id="add-student-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Adicionar Aluno</span>
+                    </button>
+                </div>
+            </header>
+            
+            <main class="p-6">
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-700">Lista de Alunos</h2>
+                        <div class="relative">
+                            <input type="text" placeholder="Buscar aluno..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" id="search-input">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200" id="students-table">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrícula</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turma</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="students-list">
+                                <tr id="loading-row">
+                                    <td colspan="6" class="px-6 py-4 text-center">
+                                        <div class="flex justify-center">
+                                            <i class="fas fa-spinner loading-spinner text-indigo-600 text-2xl"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-4">
+                        <div class="text-sm text-gray-500" id="pagination-info">
+                            Mostrando <span id="current-rows">0</span> de <span id="total-rows">0</span> alunos
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-gray-700 disabled:opacity-50" id="prev-page" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-gray-700 disabled:opacity-50" id="next-page" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="student-modal">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800" id="modal-title">Adicionar Novo Aluno</h3>
+                <button class="text-gray-400 hover:text-gray-600" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="student-form">
+                <div class="p-6 space-y-4">
+                    <input type="hidden" id="student-id">
+                    
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="registration" class="block text-sm font-medium text-gray-700">Matrícula*</label>
+                            <input type="text" id="registration" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Nome Completo*</label>
+                            <input type="text" id="name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">E-mail*</label>
+                            <input type="email" id="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="classroom" class="block text-sm font-medium text-gray-700">Curso*</label>
+                            <select id="classroom" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="">Selecione um curso</option>
+                                <option value="Ciência da Computação">Ciência da Computação</option>
+                                <option value="Engenharia de Computação">Engenharia de Computação</option>
+                                <option value="Engenharia de Software">Engenharia de Software</option>
+                                <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-md font-medium text-gray-700 mb-2">Disciplinas e Notas</h4>
+                        
+                        <div class="space-y-3" id="grades-container">
+                            <div class="grid grid-cols-3 gap-4 items-end grade-row">
+                                <div>
+                                    <label for="subject1" class="block text-sm font-medium text-gray-700">Disciplina</label>
+                                    <select id="subject1" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        <option value="Algoritmos e Estruturas de Dados">Algoritmos e Estruturas de Dados</option>
+                                        <option value="Banco de Dados">Banco de Dados</option>
+                                        <option value="Calculo I">Calculo I</option>
+                                        <option value="Engenharia de Software">Engenharia de Software</option>
+                                        <option value="Redes de Computadores">Redes de Computadores</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="grade1" class="block text-sm font-medium text-gray-700">Nota (0-10)</label>
+                                    <input type="number" id="grade1" min="0" max="10" step="0.1" class="grade-input mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                </div>
+                                
+                                <div>
+                                    <button type="button" class="remove-grade-btn text-red-600 hover:text-red-800 text-sm">
+                                        <i class="fas fa-trash-alt"></i> Remover
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="add-grade-btn" class="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-plus mr yi-1"></i> Adicionar Disciplina
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 px-6 py-4 flex justify-end space-x-3">
+                    <button type="button" id="cancel-btn" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="save-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Salvar Aluno
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="delete-modal">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h3 class="text-lg font-semibold text-gray-800">Confirmar Exclusão</h3>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-gray-700">Você tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita.</p>
+            </div>
+            
+            <div class="border-t border-gray-200 px-6 py-4 flex justify-end space-x-3">
+                <button type="button" id="cancel-delete-btn" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Cancelar
+                </button>
+                <button type="button" id="confirm-delete-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Confirmar Exclusão
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden" id="success-toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="toast-message">Operação realizada com sucesso!</span>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000/v1';
+        const API_ENDPOINTS = {
+            students: `${API_BASE_URL}/students`,
+            search: `${API_BASE_URL}/students/search`,
+            classrooms: `${API_BASE_URL}/classrooms`,
+            subjects: `${API_BASE_URL}/subjects`,
+            grades: `${API_BASE_URL}/grades`
+        };
+        
+        let students = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
+        let studentToDelete = null;
+        
+        const elements = {
+            studentsTable: document.getElementById('students-table'),
+            studentsList: document.getElementById('students-list'),
+            loadingRow: document.getElementById('loading-row'),
+            searchInput: document.getElementById('search-input'),
+            prevPageBtn: document.getElementById('prev-page'),
+            nextPageBtn: document.getElementById('next-page'),
+            currentRowsSpan: document.getElementById('current-rows'),
+            totalRowsSpan: document.getElementById('total-rows'),
+            addStudentBtn: document.getElementById('add-student-btn'),
+            studentModal: document.getElementById('student-modal'),
+            closeModalBtn: document.getElementById('close-modal'),
+            cancelBtn: document.getElementById('cancel-btn'),
+            modalTitle: document.getElementById('modal-title'),
+            studentForm: document.getElementById('student-form'),
+            studentIdInput: document.getElementById('student-id'),
+            registrationInput: document.getElementById('registration'),
+            nameInput: document.getElementById('name'),
+            emailInput: document.getElementById('email'),
+            classroomInput: document.getElementById('classroom'),
+            gradesContainer: document.getElementById('grades-container'),
+            addGradeBtn: document.getElementById('add-grade-btn'),
+            deleteModal: document.getElementById('delete-modal'),
+            cancelDeleteBtn: document.getElementById('cancel-delete-btn'),
+            confirmDeleteBtn: document.getElementById('confirm-delete-btn'),
+            successToast: document.getElementById('success-toast'),
+            toastMessage: document.getElementById('toast-message')
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStudents();
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            elements.searchInput.addEventListener('input', debounce(() => {
+                currentPage = 1;
+                const searchTerm = elements.searchInput.value.trim();
+                if (searchTerm.length > 0) {
+                    searchStudents(searchTerm);
+                } else {
+                    fetchStudents();
+                }
+            }, 300));
+            
+            elements.prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderStudents();
+                }
+            });
+            
+            elements.nextPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(students.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderStudents();
+                }
+            });
+            
+            elements.addStudentBtn.addEventListener('click', () => openStudentModal());
+            elements.closeModalBtn.addEventListener('click', () => closeModal());
+            elements.cancelBtn.addEventListener('click', () => closeModal());
+            
+            elements.studentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveStudent();
+            });
+            
+            elements.addGradeBtn.addEventListener('click', addGradeRow);
+            
+            elements.cancelDeleteBtn.addEventListener('click', () => {
+                elements.deleteModal.classList.add('hidden');
+            });
+            
+            elements.confirmDeleteBtn.addEventListener('click', () => {
+                if (studentToDelete) {
+                    deleteStudent(studentToDelete);
+                }
+            });
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(context, args);
+                }, wait);
+            };
+        }
+        
+        async function fetchStudents() {
+            try {
+                showLoading();
+                const response = await fetch(API_ENDPOINTS.students);
+                if (!response.ok) throw new Error('Erro ao carregar alunos');
+                
+                students = await response.json();
+                renderStudents();
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao carregar alunos');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function searchStudents(query) {
+            try {
+                showLoading();
+                const response = await fetch(`${API_ENDPOINTS.search}?q=${query}`);
+                if (!response.ok) throw new Error('Erro na busca');
+                
+                students = await response.json();
+                renderStudents();
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro na busca');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function getStudentById(id) {
+            try {
+                const response = await fetch(`${API_ENDPOINTS.students}/${id}`);
+                if (!response.ok) throw new Error('Erro ao carregar aluno');
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao carregar aluno');
+                return null;
+            }
+        }
+        
+        async function saveStudent() {
+            try {
+                const studentId = elements.studentIdInput.value;
+                const isEdit = studentId !== '';
+                
+                const gradeRows = elements.gradesContainer.querySelectorAll('.grade-row');
+                const grades = [];
+                
+                gradeRows.forEach((row, index) => {
+                    const subject = row.querySelector('select').value;
+                    const gradeInput = row.querySelector('input[type="number"]');
+                    const grade = gradeInput.value === '' ? null : parseFloat(gradeInput.value);
+                    
+                    if (subject && grade !== null) {
+                        grades.push({ subject, grade });
+                    }
+                });
+                
+                const studentData = {
+                    registration: elements.registrationInput.value,
+                    name: elements.nameInput.value,
+                    email: elements.emailInput.value,
+                    classroom: elements.classroomInput.value,
+                    status: "active",
+                    grades,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                const url = isEdit 
+                    ? `${API_ENDPOINTS.students}/${studentId}`
+                    : API_ENDPOINTS.students;
+                
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(studentData)
+                });
+                
+                if (!response.ok) throw new Error('Erro ao salvar aluno');
+                
+                showSuccess(isEdit ? 'Aluno atualizado com sucesso!' : 'Aluno cadastrado com sucesso!');
+                closeModal();
+                fetchStudents();
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao salvar aluno');
+            }
+        }
+        
+        async function deleteStudent(studentId) {
+            try {
+                const response = await fetch(`${API_ENDPOINTS.students}/${studentId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Erro ao excluir aluno');
+                
+                showSuccess('Aluno excluído com sucesso!');
+                elements.deleteModal.classList.add('hidden');
+                fetchStudents();
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao excluir aluno');
+            }
+        }
+        
+        function showLoading() {
+            elements.loadingRow.classList.remove('hidden');
+            elements.studentsList.innerHTML = '';
+            elements.studentsList.appendChild(elements.loadingRow);
+        }
+        
+        function hideLoading() {
+            elements.loadingRow.classList.add('hidden');
+        }
+        
+        function renderStudents() {
+            elements.studentsList.innerHTML = '';
+            
+            if (students.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        Nenhum aluno encontrado.
+                    </td>
+                `;
+                elements.studentsList.appendChild(row);
+                
+                elements.currentRowsSpan.textContent = '0';
+                elements.totalRowsSpan.textContent = '0';
+                elements.prevPageBtn.disabled = true;
+                elements.nextPageBtn.disabled = true;
+                return;
+            }
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, students.length);
+            const paginatedStudents = students.slice(startIndex, endIndex);
+            
+            paginatedStudents.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${student.registration}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${student.name}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${student.classroom}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="flex flex-wrap gap-1">
+                            ${student.grades.map(grade => `
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                    ${grade.subject}: ${grade.grade.toFixed(1)}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(student)}">
+                            ${getStatusText(student)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-indigo-600 hover:text-indigo-900 mr-3 edit-btn" data-id="${student._id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-900 delete-btn" data-id="${student._id}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                
+                elements.studentsList.appendChild(row);
+            });
+            
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const studentId = btn.getAttribute('data-id');
+                    editStudent(studentId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const studentId = btn.getAttribute('data-id');
+                    confirmDelete(studentId);
+                });
+            });
+            
+            elements.currentRowsSpan.textContent = `${startIndex + 1}-${endIndex}`;
+            elements.totalRowsSpan.textContent = students.length;
+            
+            elements.prevPageBtn.disabled = currentPage === 1;
+            elements.nextPageBtn.disabled = endIndex >= students.length;
+        }
+        
+        function getStatusClass(student) {
+            if (student.status === "inactive") return 'bg-gray-200 text-gray-600';
+            
+            const average = calculateAverage(student.grades);
+            if (average === null) return 'bg-gray-100 text-gray-800';
+            if (average >= 7) return 'bg-green-100 text-green-800';
+            if (average >= 5) return 'bg-yellow-100 text-yellow-800';
+            return 'bg-red-100 text-red-800';
+        }
+        
+        function getStatusText(student) {
+            const average = calculateAverage(student.grades);
+            
+            if (average === null) return 'Sem notas';
+            if (average >= 7) return 'Aprovado';
+            if (average >= 5) return 'Recuperação';
+            return 'Reprovado';
+        }
+        
+        function calculateAverage(grades) {
+            if (!grades || grades.length === 0) return null;
+            
+            const validGrades = grades.filter(grade => grade.grade !== null);
+            if (validGrades.length === 0) return null;
+            
+            const sum = validGrades.reduce((acc, grade) => acc + grade.grade, 0);
+            return sum / validGrades.length;
+        }
+        
+        function openStudentModal(student = null) {
+            elements.studentIdInput.value = student ? student._id : '';
+            elements.modalTitle.textContent = student ? 'Editar Aluno' : 'Adicionar Novo Aluno';
+            
+            if (student) {
+                elements.registrationInput.value = student.registration;
+                elements.nameInput.value = student.name;
+                elements.emailInput.value = student.email;
+                elements.classroomInput.value = student.classroom;
+                
+                const gradeRows = elements.gradesContainer.querySelectorAll('.grade-row');
+                for (let i = 1; i < gradeRows.length; i++) {
+                    gradeRows[i].remove();
+                }
+                
+                if (student.grades && student.grades.length > 0) {
+                    const firstRow = elements.gradesContainer.querySelector('.grade-row');
+                    firstRow.querySelector('select').value = student.grades[0].subject;
+                    firstRow.querySelector('input[type="number"]').value = student.grades[0].grade;
+                    
+                    for (let i = 1; i < student.grades.length; i++) {
+                        addGradeRow(student.grades[i].subject, student.grades[i].grade);
+                    }
+                }
+            } else {
+                elements.studentForm.reset();
+                
+                elements.gradesContainer.innerHTML = '';
+                addGradeRow('Matemática', '');
+            }
+            
+            elements.studentModal.classList.remove('hidden');
+        }
+        
+        function closeModal() {
+            elements.studentModal.classList.add('hidden');
+            elements.studentForm.reset();
+        }
+        
+        function editStudent(studentId) {
+            getStudentById(studentId).then(student => {
+                if (student) {
+                    openStudentModal(student);
+                }
+            });
+        }
+        
+        function confirmDelete(studentId) {
+            studentToDelete = studentId;
+            elements.deleteModal.classList.remove('hidden');
+        }
+        
+        function addGradeRow(subject = '', grade = '') {
+            const gradeCount = elements.gradesContainer.querySelectorAll('.grade-row').length;
+            const newGradeId = gradeCount + 1;
+            
+            const gradeRow = document.createElement('div');
+            gradeRow.className = 'grid grid-cols-3 gap-4 items-end grade-row';
+            gradeRow.innerHTML = `
+                <div>
+                    <label for="subject${newGradeId}" class="block text-sm font-medium text-gray-700">Disciplina</label>
+                    <select id="subject${newGradeId}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="Algoritmos e Estruturas de Dados" ${subject === 'Algoritmos e Estruturas de Dados' ? 'selected' : ''}>Algoritmos e Estruturas de Dados</option>
+                        <option value="Banco de Dados" ${subject === 'Banco de Dados' ? 'selected' : ''}>Banco de Dados</option>
+                        <option value="Calculo I" ${subject === 'Calculo I' ? 'selected' : ''}>Calculo I</option>
+                        <option value="Engenharia de Software" ${subject === 'Engenharia de Software' ? 'selected' : ''}>Engenharia de Software</option>
+                        <option value="Redes de Computadores" ${subject === 'Redes de Computadores' ? 'selected' : ''}>Redes de Computadores</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="grade${newGradeId}" class="block text-sm font-medium text-gray-700">Nota (0-10)</label>
+                    <input type="number" id="grade${newGradeId}" min="0" max="10" step="0.1" value="${grade}" class="grade-input mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                
+                <div>
+                    <button type="button" class="remove-grade-btn text-red-600 hover:text-red-800 text-sm">
+                        <i class="fas fa-trash-alt"></i> Remover
+                    </button>
+                </div>
+            `;
+            
+            elements.gradesContainer.appendChild(gradeRow);
+            
+            const removeBtn = gradeRow.querySelector('.remove-grade-btn');
+            removeBtn.addEventListener('click', () => {
+                if (elements.gradesContainer.querySelectorAll('.grade-row').length > 1) {
+                    gradeRow.remove();
+                }
+            });
+        }
+        
+        function showSuccess(message) {
+            elements.toastMessage.textContent = message;
+            elements.successToast.classList.remove('hidden');
+            elements.successToast.classList.add('success-toast');
+            
+            setTimeout(() => {
+                elements.successToast.classList.add('hidden');
+                elements.successToast.classList.remove('success-toast');
+            }, 3000);
+        }
+        
+        function showError(message) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>

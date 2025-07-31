@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eGestor - Painel Escolar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-container {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .login-container:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        .logo {
+            color: #2c3e50;
+        }
+        .btn-login {
+            background-color: #3498db;
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        .error-message {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .show-error {
+            opacity: 1;
+        }
+        input:focus {
+            border-color: #3498db !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="login-container bg-white rounded-xl w-full max-w-md p-8 space-y-6">
+        <div class="text-center">
+            <div class="flex justify-center mb-4">
+                <img src="https://placehold.co/120x120" alt="Logo do eGestor - Painel Escolar mostrando um ícone de prancheta com gráficos e um símbolo de educação" class="w-20 h-20 rounded-full object-cover" />
+            </div>
+            <h1 class="logo text-3xl font-bold">eGestor</h1>
+            <p class="text-gray-600 mt-2">Painel de Gestão Escolar</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+                <input type="text" id="username" name="username" required 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200 transition duration-200"
+                    placeholder="Digite seu usuário">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <input type="password" id="password" name="password" required 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200 transition duration-200"
+                    placeholder="Digite sua senha">
+            </div>
+
+            <div class="error-message text-red-500 text-sm py-2 text-center" id="errorMessage">
+                Usuário ou senha incorretos. Por favor, tente novamente.
+            </div>
+
+            <div>
+                <button type="submit" class="btn-login w-full text-white py-3 px-4 rounded-lg font-semibold">
+                    Entrar no Sistema
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center text-sm text-gray-500 mt-6">
+            <p>eGestor &copy; 2025 - Todos os direitos reservados</p>
+            <p class="mt-1">Sistema de Gestão Escolar Integrado</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Credenciais válidas
+            const validUsername = "admin.egestor";
+            const validPassword = "root.egestor";
+            
+            if(username === validUsername && password === validPassword) {
+                // Redireciona para a página do painel após login bem-sucedido
+                window.location.href = "dashboard.html";
+            } else {
+                // Mostra mensagem de erro
+                errorMessage.classList.add('show-error');
+                setTimeout(() => {
+                    errorMessage.classList.remove('show-error');
+                }, 3000);
+                
+                // Adiciona efeito visual de erro
+                document.getElementById('username').classList.add('border-red-500');
+                document.getElementById('password').classList.add('border-red-500');
+                setTimeout(() => {
+                    document.getElementById('username').classList.remove('border-red-500');
+                    document.getElementById('password').classList.remove('border-red-500');
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
+

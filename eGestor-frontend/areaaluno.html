@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eGestor - Consulta de Notas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-blue-600 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-graduation-cap text-3xl"></i>
+                        <h1 class="text-2xl font-bold">eGestor</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm">Área do Aluno</span>
+                        <a href="login.html" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded-md transition duration-150">
+                            <i class="fas fa-user-shield mr-1"></i> Coordenação
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <div class="flex flex-col md:flex-row md:items-end gap-4">
+                        <div class="flex-grow">
+                            <label for="matricula" class="block text-gray-700 font-medium mb-2">Número de Matrícula</label>
+                            <div class="flex">
+                                <input 
+                                    type="text" 
+                                    id="matricula" 
+                                    placeholder="Digite sua matrícula" 
+                                    class="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                <button 
+                                    id="btnConsultar"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-r-lg transition duration-200"
+                                >
+                                    <i class="fas fa-search"></i> Consultar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 hidden" id="statusMsg">
+                        <p class="text-sm p-3 rounded"></p>
+                    </div>
+                </div>
+
+                <div class="hidden" id="resultadoContainer">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                        <div class="bg-blue-100 p-6 border-b border-gray-200">
+                            <div class="flex flex-col md:flex-row md:items-center gap-6">
+                                <div class="flex-shrink-0">
+                                    <img 
+                                        src="https://placehold.co/150x150" 
+                                        alt="Foto do aluno sorrindo usando uniforme escolar, fundo neutro" 
+                                        class="w-24 h-24 rounded-full object-cover border-4 border-white shadow"
+                                    >
+                                </div>
+                                <div class="flex-grow">
+                                    <h2 class="text-2xl font-bold text-gray-800" id="alunoNome"></h2>
+                                    <div class="grid grid-cols-2 gap-4 mt-2">
+                                        <div>
+                                            <p class="text-gray-600 text-sm">Matrícula</p>
+                                            <p class="font-medium" id="alunoMatricula"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 text-sm">Curso</p>
+                                            <p class="font-medium" id="alunoCurso"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 text-sm">Período</p>
+                                            <p class="font-medium" id="alunoPeriodo"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 text-sm">CR</p>
+                                            <p class="font-medium" id="alunoCR"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-6 overflow-x-auto">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Notas por Disciplina</h3>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disciplina</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nota Final</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="tabelaNotas">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold mb-3 text-gray-800 text-center">Resumo Acadêmico</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between border-b pb-2">
+                                    <span class="text-gray-600">Disciplinas cursadas:</span>
+                                    <span class="font-medium" id="totalDisciplinas"></span>
+                                </div>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span class="text-gray-600">Aprovadas:</span>
+                                    <span class="font-medium text-green-600" id="aprovadas"></span>
+                                </div>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span class="text-gray-600">Reprovadas:</span>
+                                    <span class="font-medium text-red-600" id="reprovadas"></span>
+                                </div>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span class="text-gray-600">Média Geral:</span>
+                                    <span class="font-medium text-blue-600" id="mediaGeral"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
+                            <h3 class="text-lg font-semibold mb-3 text-gray-800 text-center">Histórico de Notas</h3>
+                            <div class="relative h-64">
+                                <canvas id="graficoNotas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-gray-800 text-white py-6">
+            <div class="container mx-auto px-4 text-center">
+                <p>eGestor &copy; 2025 - Todos os direitos reservados</p>
+                <p class="text-gray-400 text-sm mt-2">Desenvolvido pelo Departamento de Tecnologia</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnConsultar = document.getElementById('btnConsultar');
+            const matriculaInput = document.getElementById('matricula');
+            const resultadoContainer = document.getElementById('resultadoContainer');
+            const statusMsg = document.getElementById('statusMsg');
+            const statusText = statusMsg.querySelector('p');
+
+            function showStatus(msg, isError = false) {
+                statusText.textContent = msg;
+                statusMsg.classList.remove('hidden');
+                statusMsg.className = 'mt-4';
+                if (isError) {
+                    statusMsg.classList.add('bg-red-100', 'text-red-700');
+                } else {
+                    statusMsg.classList.add('bg-blue-100', 'text-blue-700');
+                }
+            }
+
+            function hideStatus() {
+                statusMsg.classList.add('hidden');
+            }
+
+            async function getAlunoData(matricula) {
+                hideStatus();
+                showStatus('Buscando dados do aluno...');
+
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/v1/students/search?q=${matricula}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Erro ao buscar dados do aluno.');
+                    }
+
+                    const students = await response.json();
+                    console.log("Resposta bruta da API (students):", students); 
+
+                    if (students.length === 0) {
+                        showStatus('Matrícula não encontrada.', true);
+                        return null;
+                    }
+
+                    const apiAlunoData = students[0]; 
+                    console.log("Dados do aluno da API (apiAlunoData):", apiAlunoData); 
+
+                    const alunoData = {
+                        matricula: apiAlunoData.registration,
+                        nome: apiAlunoData.name,
+                        curso: apiAlunoData.classroom || 'N/A', 
+                        periodo: '2025.1', 
+                        cr: 'N/A', 
+                        disciplinas: apiAlunoData.grades.map(gradeItem => { 
+                            const status = gradeItem.grade >= 7.0 ? 'Aprovado' : 'Reprovado'; 
+                            return {
+                                nome: gradeItem.subject,
+                                professor: 'N/A', 
+                                notafinal: gradeItem.grade, 
+                                media: gradeItem.grade, 
+                                status: status
+                            };
+                        })
+                    };
+                    console.log("Dados finais do aluno para o frontend (alunoData):", alunoData); 
+                    
+                    showStatus('Dados carregados com sucesso!');
+                    return alunoData;
+                    
+                } catch (error) {
+                    console.error("Erro na função getAlunoData:", error); 
+                    showStatus(`Erro: ${error.message}`, true);
+                    return null;
+                }
+            }
+
+            function displayAlunoData(data) {
+                document.getElementById('alunoNome').textContent = data.nome;
+                document.getElementById('alunoMatricula').textContent = data.matricula;
+                document.getElementById('alunoCurso').textContent = data.curso;
+                document.getElementById('alunoPeriodo').textContent = data.periodo;
+                document.getElementById('alunoCR').textContent = data.cr;
+
+                const tabelaNotas = document.getElementById('tabelaNotas');
+                tabelaNotas.innerHTML = '';
+
+                data.disciplinas.forEach(disciplina => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${disciplina.nome}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${disciplina.notafinal.toFixed(1)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${disciplina.status === 'Aprovado' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${disciplina.status}
+                            </span>
+                        </td>
+                    `;
+
+                    tabelaNotas.appendChild(row);
+                });
+
+                const totalDisciplinas = data.disciplinas.length;
+                const aprovadas = data.disciplinas.filter(d => d.status === 'Aprovado').length;
+                const reprovadas = totalDisciplinas - aprovadas;
+                
+                const sumMedias = data.disciplinas.reduce((sum, d) => sum + d.media, 0);
+                const mediaGeral = totalDisciplinas > 0 ? (sumMedias / totalDisciplinas).toFixed(1) : '0.0';
+
+                document.getElementById('totalDisciplinas').textContent = totalDisciplinas;
+                document.getElementById('aprovadas').textContent = aprovadas;
+                document.getElementById('reprovadas').textContent = reprovadas;
+                document.getElementById('mediaGeral').textContent = mediaGeral;
+
+                createChart(data.disciplinas);
+
+                resultadoContainer.classList.remove('hidden');
+            }
+
+            let myChart = null;
+
+            function createChart(disciplinas) {
+                const ctx = document.getElementById('graficoNotas').getContext('2d');
+                
+                if (myChart) {
+                    myChart.destroy();
+                }
+
+                disciplinas.sort((a, b) => b.media - a.media);
+                
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: disciplinas.map(d => d.nome),
+                        datasets: [{
+                            label: 'Média Final',
+                            data: disciplinas.map(d => d.media),
+                            backgroundColor: disciplinas.map(d => d.status === 'Aprovado' ? 'rgba(54, 162, 235, 0.7)' : 'rgba(255, 99, 132, 0.7)'),
+                            borderColor: disciplinas.map(d => d.status === 'Aprovado' ? 'rgba(54, 162, 235, 1)' : 'rgba(255, 99, 132, 1)'),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 10,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false 
+                            }
+                        }
+                    }
+                });
+            }
+
+            btnConsultar.addEventListener('click', async function() {
+                const matricula = matriculaInput.value.trim();
+                
+                if (!matricula) {
+                    showStatus('Por favor, informe o número da matrícula.', true);
+                    return;
+                }
+
+                const alunoData = await getAlunoData(matricula);
+                
+                if (alunoData) {
+                    displayAlunoData(alunoData);
+                } else {
+                    resultadoContainer.classList.add('hidden'); 
+                }
+            });
+
+            matriculaInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    btnConsultar.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

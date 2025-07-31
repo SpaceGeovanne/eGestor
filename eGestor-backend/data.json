@@ -1,0 +1,82 @@
+[
+    {
+        "registration": "2025EC01",
+        "name": "Teste",
+        "email": "teste@discente.egestor.com",
+        "classroom": "Engenharia de Computa\u00e7\u00e3o",
+        "status": "active",
+        "grades": [
+            {
+                "subject": "Algoritmos e Estruturas de Dados",
+                "grade": 10
+            },
+            {
+                "subject": "Banco de Dados",
+                "grade": 5
+            },
+            {
+                "subject": "Engenharia de Software",
+                "grade": 4
+            },
+            {
+                "subject": "Calculo I",
+                "grade": 9.5
+            }
+        ],
+        "createdAt": "2025-07-29T00:57:14.938Z",
+        "updatedAt": "2025-07-29T00:57:14.992795Z",
+        "_id": "c55d987d-d17a-482e-997a-155205889c8f"
+    },
+    {
+        "registration": "2025EC02",
+        "name": "Teste 02",
+        "email": "teste@discente.egestor.com",
+        "classroom": "Ci\u00eancia da Computa\u00e7\u00e3o",
+        "status": "active",
+        "grades": [
+            {
+                "subject": "Algoritmos e Estruturas de Dados",
+                "grade": 10
+            },
+            {
+                "subject": "Banco de Dados",
+                "grade": 10
+            },
+            {
+                "subject": "Calculo I",
+                "grade": 7
+            }
+        ],
+        "createdAt": "2025-07-30T03:09:53.198414Z",
+        "updatedAt": "2025-07-30T03:09:53.199483Z",
+        "_id": "60437120-c6e0-4996-8bbc-170b1ddc1136"
+    },
+    {
+        "registration": "2025EC03",
+        "name": "Teste 03",
+        "email": "teste@discente.egestor.com",
+        "classroom": "Engenharia de Software",
+        "status": "active",
+        "grades": [
+            {
+                "subject": "Algoritmos e Estruturas de Dados",
+                "grade": 10
+            },
+            {
+                "subject": "Banco de Dados",
+                "grade": 10
+            },
+            {
+                "subject": "Engenharia de Software",
+                "grade": 4
+            },
+            {
+                "subject": "Redes de Computadores",
+                "grade": 5
+            }
+        ],
+        "createdAt": "2025-07-30T03:26:38.246Z",
+        "updatedAt": "2025-07-30T03:26:38.278614Z",
+        "_id": "994e8d4a-991a-4a6a-987d-b7a933bc2b15"
+    }
+]

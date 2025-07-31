@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eGestor - Coordenação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --secondary-color: #10B981;
+            --dark-color: #1F2937;
+            --light-color: #F9FAFB;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F3F4F6;
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .success-toast {
+            animation: slideIn 0.5s, slideOut 0.5s 2.5s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        <div class="sidebar bg-white w-64 flex-shrink-0 border-r border-gray-200 p-4 flex flex-col">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-2">
+                    <img src="https://placehold.co/40x40" alt="Logo da instituição educacional" class="rounded-full">
+                    <span class="font-bold text-xl text-gray-800">eGestor</span>
+                </div>
+            </div>
+            
+            <nav class="flex-1">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg" id="dashboard-link">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="alunos.html" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-100" id="students-link">
+                            <i class="fas fa-user-graduate mr-3"></i>
+                            <span>Alunos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-100" id="reports-link">
+                            <i class="fas fa-chart-bar mr-3"></i>
+                            <span>Relatórios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-100" id="settings-link">
+                            <i class="fas fa-cog mr-3"></i>
+                            <span>Configurações</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="mt-auto pb-4">
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <img src="https://placehold.co/40x40" alt="Foto do gestor" class="rounded-full mr-3">
+                    <div>
+                        <p class="font-medium">Gestor Administrativo</p>
+                        <p class="text-sm text-gray-500">admin@egestor.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-auto">
+            <header class="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+            </header>
+            
+            <main class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow card-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total de Alunos</p>
+                                <p class="text-3xl font-bold text-gray-900" id="total-students">0</p>
+                            </div>
+                            <div class="p-3 bg-indigo-100 rounded-full text-indigo-600">
+                                <i class="fas fa-user-graduate text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow card-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Alunos Aprovados</p>
+                                <p class="text-3xl font-bold text-gray-900" id="approved-students">0</p>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-full text-green-600">
+                                <i class="fas fa-check-circle text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow card-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Em Recuperação</p>
+                                <p class="text-3xl font-bold text-gray-900" id="recovery-students">0</p>
+                            </div>
+                            <div class="p-3 bg-yellow-100 rounded-full text-yellow-600">
+                                <i class="fas fa-exclamation-triangle text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow card-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Alunos Reprovados</p>
+                                <p class="text-3xl font-bold text-gray-900" id="failed-students">0</p>
+                            </div>
+                            <div class="p-3 bg-red-100 rounded-full text-red-600">
+                                <i class="fas fa-times-circle text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow card-shadow">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Status dos Alunos</h3>
+                        <div class="relative h-80">
+                            <canvas id="studentStatusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow card-shadow">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Notas Médias por Curso</h3>
+                        <div class="relative h-80">
+                            <canvas id="averageGradeByClassroomChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <div class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden" id="success-toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="toast-message">Operação realizada com sucesso!</span>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000/v1';
+        const API_ENDPOINTS = {
+            students: `${API_BASE_URL}/students`,
+            classrooms: `${API_BASE_URL}/classrooms`,
+            subjects: `${API_BASE_URL}/subjects`
+        };
+        
+        const elements = {
+            totalStudents: document.getElementById('total-students'),
+            approvedStudents: document.getElementById('approved-students'),
+            recoveryStudents: document.getElementById('recovery-students'),
+            failedStudents: document.getElementById('failed-students'),
+            studentStatusChart: document.getElementById('studentStatusChart'),
+            averageGradeByClassroomChart: document.getElementById('averageGradeByClassroomChart'),
+            successToast: document.getElementById('success-toast'),
+            toastMessage: document.getElementById('toast-message')
+        };
+        
+        let studentStatusChartInstance;
+        let averageGradeByClassroomChartInstance;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDashboardData();
+        });
+        
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch(API_ENDPOINTS.students);
+                if (!response.ok) throw new Error('Erro ao carregar dados do dashboard');
+                
+                const students = await response.json();
+                processDashboardData(students);
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Erro ao carregar dados do dashboard');
+            }
+        }
+
+        function processDashboardData(students) {
+            let total = students.length;
+            let approved = 0;
+            let recovery = 0;
+            let failed = 0;
+            let studentsWithoutGrades = 0;
+
+            const classroomGrades = {};
+
+            students.forEach(student => {
+                const average = calculateAverage(student.grades);
+                if (average === null) {
+                    studentsWithoutGrades++;
+                } else if (average >= 7) {
+                    approved++;
+                } else if (average >= 5) {
+                    recovery++;
+                } else {
+                    failed++;
+                }
+
+                if (student.classroom) {
+                    if (!classroomGrades[student.classroom]) {
+                        classroomGrades[student.classroom] = [];
+                    }
+                    if (average !== null) {
+                        classroomGrades[student.classroom].push(average);
+                    }
+                }
+            });
+
+            elements.totalStudents.textContent = total;
+            elements.approvedStudents.textContent = approved;
+            elements.recoveryStudents.textContent = recovery;
+            elements.failedStudents.textContent = failed;
+
+            renderStudentStatusChart(approved, recovery, failed, studentsWithoutGrades);
+            renderAverageGradeByClassroomChart(classroomGrades);
+        }
+
+        function calculateAverage(grades) {
+            if (!grades || grades.length === 0) return null;
+            
+            const validGrades = grades.filter(grade => grade.grade !== null);
+            if (validGrades.length === 0) return null;
+            
+            const sum = validGrades.reduce((acc, grade) => acc + grade.grade, 0);
+            return sum / validGrades.length;
+        }
+
+        function renderStudentStatusChart(approved, recovery, failed, studentsWithoutGrades) {
+            const ctx = elements.studentStatusChart.getContext('2d');
+
+            if (studentStatusChartInstance) {
+                studentStatusChartInstance.destroy();
+            }
+
+            studentStatusChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Aprovados', 'Recuperação', 'Reprovados', 'Sem Notas'],
+                    datasets: [{
+                        data: [approved, recovery, failed, studentsWithoutGrades],
+                        backgroundColor: [
+                            '#10B981',
+                            '#F59E0B',
+                            '#EF4444',
+                            '#6B7280'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false,
+                            text: 'Status dos Alunos'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAverageGradeByClassroomChart(classroomGrades) {
+            const labels = Object.keys(classroomGrades).sort();
+            const data = labels.map(classroom => {
+                const grades = classroomGrades[classroom];
+                if (grades.length === 0) return 0;
+                const sum = grades.reduce((acc, grade) => acc + grade, 0);
+                return (sum / grades.length).toFixed(2);
+            });
+
+            const ctx = elements.averageGradeByClassroomChart.getContext('2d');
+
+            if (averageGradeByClassroomChartInstance) {
+                averageGradeByClassroomChartInstance.destroy();
+            }
+
+            averageGradeByClassroomChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nota Média',
+                        data: data,
+                        backgroundColor: '#4F46E5',
+                        borderColor: '#4F46E5',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        title: {
+                            display: false,
+                            text: 'Notas Médias por Turma'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: 'Nota Média'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Turma'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function showSuccess(message) {
+            elements.toastMessage.textContent = message;
+            elements.successToast.classList.remove('hidden');
+            elements.successToast.classList.add('success-toast');
+            
+            setTimeout(() => {
+                elements.successToast.classList.add('hidden');
+                elements.successToast.classList.remove('success-toast');
+            }, 3000);
+        }
+        
+        function showError(message) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>

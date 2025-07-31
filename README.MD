@@ -34,6 +34,9 @@ pip install -r requirements.txt - instalar as dependências do Flask
 ```
 python3 -m venv venv - para criar um ambiente virtual.
 ```
+```
+Clique em start.bat para ligar o back-end.
+```
 
 ## ☕ Usando eGestor
 
